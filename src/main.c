@@ -41,6 +41,10 @@
 #include <mach/mach_time.h>
 #endif
 
+#ifdef HAVE_liburing
+#include <liburing.h>
+#endif
+
 #ifndef O_CLOEXEC
 #define O_CLOEXEC 0
 #endif
@@ -1409,6 +1413,7 @@ int main (int argc, char **argv)
 
     state_send(gt.state_fd, "INITIALIZED", tun_name);
 
+
     while (!gt.quit) {
         if (retry_count>=0 && retry>=retry_count+1) {
             gt_log("couldn't %s (%d attempt%s)\n", listener?"listen":"connect",
@@ -1479,6 +1484,16 @@ int main (int argc, char **argv)
         buffer_format(&sock.write);
         buffer_format(&sock.read);
 
+#ifdef HAVE_liburing
+
+    struct io_uring ring;
+    struct io_uring_params params;
+    memset(&params, 0, sizeof(params));
+    params.flags |= IORING_SETUP_SQPOLL;
+    params.sq_thread_idle = 2000;
+    
+
+#else
         while (1) {
             if _0_(gt.quit)
                 stop_loop |= 1;
@@ -1635,6 +1650,7 @@ int main (int argc, char **argv)
                 }
             }
         }
+#endif
 
     restart:
         if (sock.fd!=-1) {

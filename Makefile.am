@@ -3,7 +3,9 @@ ACLOCAL_AMFLAGS = -I m4 --install
 bin_PROGRAMS = glorytun
 
 glorytun_CFLAGS = $(libsodium_CFLAGS)
-glorytun_LDADD = $(libsodium_LIBS)
+glorytun_CFLAGS += $(liburing_CFLAGS)
+glorytun_LDADD = $(libsodium_LIBS) 
+glorytun_LDADD += $(liburing_LIBS)
 glorytun_SOURCES = \
     src/common.h \
     src/common.c \
